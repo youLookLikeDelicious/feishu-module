@@ -407,7 +407,7 @@ trait RenderBlock
     {
         $blockId = data_get($block, 'block_id', '');
 
-        $file = $this->browser($blockId, 'wiki')->downloadCanvas($blockId);
+        $file = $this->browser($blockId)->downloadCanvas($blockId);
 
         return $file ? "![painter]($file)".PHP_EOL : '';
     }
