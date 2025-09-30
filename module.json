@@ -1,0 +1,11 @@
+{
+    "name": "Feishu",
+    "alias": "feishu",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Feishu\\Providers\\FeishuServiceProvider"
+    ],
+    "files": []
+}
