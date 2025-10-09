@@ -13,14 +13,14 @@ class BlockRender
 
     protected $browsers = [];
 
-    public function __construct(protected FeishuService $feishuService)
+    public function __construct(protected FeishuService $feishuService, protected $docType, protected $documentId)
     {
         $this->fileHandler = tmpfile();
     }
 
-    public function browser($documentId, $docType = 'docx')
+    public function browser()
     {
-        return $this->browsers[$documentId] ??= new FeishuBrowserDoc($documentId, $docType);
+        return $this->browsers[$this->documentId] ??= new FeishuBrowserDoc($this->documentId, $this->docType);
     }
 
     public function render(array|callable $blocks)

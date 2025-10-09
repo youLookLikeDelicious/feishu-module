@@ -87,7 +87,7 @@ class FeishuService extends Service
 
     public function renderToMarkdown($documentId, $docType = 'docx')
     {
-        $render = new BlockRender($this, $docType);
+        $render = new BlockRender($this, $docType, $documentId);
         $contents = $render->render(function () use ($documentId) {
             $query = [];
             while (1) {

@@ -161,7 +161,7 @@ trait RenderBlock
 
         $method = $this->blocks[$block['block_type']] ?? null;
         if (array_key_exists($block['block_type'], $this->extentions)) {
-            $result = $this->callExtention($block['block_type'], $block);
+            $result = $this->callExtension($block['block_type'], $block);
         } else if ($method && method_exists($this, $method)) {
             $result = $this->$method($block);
         }
@@ -171,7 +171,7 @@ trait RenderBlock
         }
 
         if ($this->currentTableBlock && !in_array($block['block_type'], [31])) {
-            if ($this->currentTableBlock->isFinished(data_get($block, 'parent_id', ''))) {
+            if ($this->currentTableBlock->isFinished($block)) {
                 $result = $this->currentTableBlock->render().PHP_EOL.$result;
                 $this->currentTableBlock = null;
 
@@ -185,7 +185,7 @@ trait RenderBlock
         return $result;
     }
 
-    protected function callExtention($type, $block)
+    protected function callExtension($type, $block)
     {
         $handler = $this->extentions[$block['block_type']];
 
@@ -256,13 +256,13 @@ trait RenderBlock
     {
         if (isset($element['equation'])) {
             return [
-                'style' => $element['equation']['text_element_style'] ?? [],
-                'content' => '$$'.data_get($element, 'text.elements.equation.content', '').'$$',
+                'style' => data_get($element, 'equation.text_element_style', []),
+                'content' => '$$'.data_get($element, 'equation.content', '').'$$',
             ];
         } else if (isset($element['text_run'])) {
             return [
-                'style' => $element['text_run']['text_element_style'] ?? [],
-                'content' => data_get($element, 'text.elements.text_run.content', ''),
+                'style' => data_get($element, 'text_run.text_element_style', []),
+                'content' => data_get($element, 'text_run.content', ''),
             ];
         }
 
@@ -308,7 +308,7 @@ trait RenderBlock
                         'bold' => '**',
                         'italic' => '*',
                         'strikethrough' => '~~',
-                        'underline' => '__',
+                        'underline' => '<u>',
                         'code' => '`',
                         default => '',
                     };
@@ -326,7 +326,8 @@ trait RenderBlock
         
         $decorator = implode('', $decorators);
         if ($decorator) {
-            $tmpContent = $decorator.$tmpContent.$decorator;
+            $pendingDecorator = str_replace(['<'], ['</'], $decorator);
+            $tmpContent = $decorator.$tmpContent.$pendingDecorator;
         }
 
         return $tmpContent;
@@ -392,7 +393,7 @@ trait RenderBlock
     {
         $blockId = data_get($block, 'block_id', '');
 
-        $file = $this->browser($blockId)->downloadCanvas($blockId);
+        $file = $this->browser()->downloadCanvas($blockId);
 
         return $file ? "![table]($file)".PHP_EOL : '';
     }
@@ -407,7 +408,7 @@ trait RenderBlock
     {
         $blockId = data_get($block, 'block_id', '');
 
-        $file = $this->browser($blockId)->downloadCanvas($blockId);
+        $file = $this->browser()->downloadCanvas($blockId);
 
         return $file ? "![painter]($file)".PHP_EOL : '';
     }

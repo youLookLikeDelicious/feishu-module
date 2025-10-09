@@ -3,6 +3,7 @@ namespace Modules\Feishu\Services\Feishu;
 
 use HeadlessChromium\Browser;
 use HeadlessChromium\Communication\Connection;
+use HeadlessChromium\Exception\CommunicationException;
 use HeadlessChromium\Page;
 use Illuminate\Support\Facades\Storage;
 
@@ -23,7 +24,7 @@ class FeishuBrowserDoc
     public function loadPage($documentId)
     {
         $websocketUri = 'ws://browserless:3000/?token=6R0W53R135510';
-        $connection = new Connection($websocketUri, sendSyncDefaultTimeout: 300);
+        $connection = new Connection($websocketUri, sendSyncDefaultTimeout: 3000);
         $connection->connect();
         $this->browser = new Browser($connection);
         try {
@@ -44,7 +45,6 @@ class FeishuBrowserDoc
     {
         $content = $this->page->evaluate('document.querySelector("[data-record-id=\"'.$blockId.'\"]  canvas")?.toDataURL("base64/png")')->getReturnValue();
         if($content) {
-            file_put_contents('canvas.img', $$this->page->evaluate('document.querySelector("[data-record-id=\"'.$blockId.'\"]  canvas")?.toDataURL("base64/png")')->getReturnValue());
             return Storage::put($blockId.'.png', base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
         }
 
@@ -58,6 +58,10 @@ class FeishuBrowserDoc
 
     public function __destruct()
     {
-        $this->browser?->close();
+        try {
+            $this->browser?->close();
+        } catch(CommunicationException $e) {
+            
+        }
     }
 }

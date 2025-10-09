@@ -5,9 +5,11 @@ class TableBlock
 {
     protected $cellIndex = 0;
 
-    protected $currentCellId = '';
+    public $currentCellId = '';
 
     protected $cells = [];
+
+    protected $finished = false;
 
     /**
      * 总的单元格数量
@@ -26,6 +28,8 @@ class TableBlock
     public function append($content)
     {
         $this->cells[$this->currentCellId] .= $content;
+
+        $this->cells[$this->currentCellId] = trim($this->cells[$this->currentCellId]);
     }
 
     public function appendCell($id)
@@ -34,9 +38,10 @@ class TableBlock
         ++$this->cellIndex;
     }
 
-    public function isFinished($parentId)
+    public function isFinished($block)
     {
-        return $this->cellIndex === $this->size && $this->currentCellId != $parentId;
+        $parentId = data_get($block, 'parent_id', '');
+        return $this->cellIndex === $this->size && $this->currentCellId != $parentId && $block['block_type'] != 32;
     }
 
     public function render()
@@ -45,8 +50,9 @@ class TableBlock
 
         $cells = array_slice($this->cells, 0, $this->columnSize);
 
-        $result = '|'.implode('|', $cells).'|'.PHP_EOL;
+        $result = '| '.str_repeat('    |', $this->columnSize).PHP_EOL;
         $result .= '| '.str_repeat('---- |', $this->columnSize).PHP_EOL;
+        $result .= '|'.implode('|', $cells).'|'.PHP_EOL;
 
         $cells = collect(array_slice($this->cells, $this->columnSize))->chunk($this->columnSize);
 
@@ -54,6 +60,6 @@ class TableBlock
             $result .= '|  '.implode('  |', $row->toArray()).'|'.PHP_EOL;
         }
 
-        return '';
+        return $result;
     }
 }
