@@ -14,7 +14,7 @@ class FeishuBrowserDoc
 {
     protected ?Browser $browser = null;
 
-    protected \HeadlessChromium\Page $page;
+    protected ?\HeadlessChromium\Page $page;
 
     public function __construct($documentId, public $docType = 'docx')
     {
@@ -32,20 +32,36 @@ class FeishuBrowserDoc
             $this->page = $this->browser->createPage();
             $this->page->setViewport(1920, 1080);
             $this->page->navigate($uri)->waitForNavigation(Page::INTERACTIVE_TIME, 30000);
-            
-            // file_put_contents('canvas.img', $page->evaluate('document.documentElement.innerHTML')->getReturnValue());
+            $this->scrollToBottom();
+            sleep(2);
         } catch (\Exception $e) {
             $this->browser->close();
             $this->browser = null;
+            $this->page = null;
             throw $e;
         }
     }
 
+    protected function scrollToBottom()
+    {
+        if (!$this->page) {
+            return;
+        }
+
+        // 获取页面的总高度
+        $this->page->evaluate('document.querySelector(".bear-web-x-container").scrollTop = document.querySelector(".bear-web-x-container").scrollHeight || 0');
+    }
+
     public function downloadCanvas($blockId)
     {
+        if (!$this->page) {
+            return null;
+        }
+
         $content = $this->page->evaluate('document.querySelector("[data-record-id=\"'.$blockId.'\"]  canvas")?.toDataURL("base64/png")')->getReturnValue();
         if($content) {
-            return Storage::put($blockId.'.png', base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
+            Storage::put($blockId.'.png', base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
+            return storage_path($blockId.'.png');
         }
 
         return null;

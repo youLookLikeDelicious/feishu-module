@@ -410,7 +410,7 @@ trait RenderBlock
 
         $file = $this->browser()->downloadCanvas($blockId);
 
-        return $file ? "![painter]($file)".PHP_EOL : '';
+        return $file ? "![painter]($file)".PHP_EOL : ''; 
     }
 
     /**
