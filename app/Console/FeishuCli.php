@@ -3,6 +3,7 @@
 namespace Modules\Feishu\Console;
 
 use Illuminate\Console\Command;
+use Modules\Feishu\Events\MarkdownRendered;
 use Modules\Feishu\Services\Feishu\FeishuBrowserDoc;
 use Modules\Feishu\Services\Feishu\FeishuService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -12,8 +13,6 @@ use Symfony\Component\Console\Input\InputArgument;
 #[AsCommand(name: 'feishu:cli')]
 class FeishuCli extends Command
 {
-    
-
     /**
      * Feishu Service instance
      */
@@ -43,6 +42,8 @@ class FeishuCli extends Command
 
         match($cmd) {
             'blocks' => $this->getDocBlocks(),
+            'folders' => $this->syncFolders(),
+            'sync-doc' => $this->syncDoc(),
             default => null
         };
 
@@ -87,12 +88,54 @@ class FeishuCli extends Command
 
         $docType = $this->option('wiki') ? 'wiki' : 'docx';
 
-        $accessToken = $this->feishuService->renderToMarkdown($documentId, $docType);
+        $content = $this->feishuService->renderToMarkdown($documentId, $docType);
 
-        // $accessToken = $this->feishuService->getDocumentBlocks($documentId);
-        // file_put_contents('feishu_doc_blocks_'.$documentId.'.json', json_encode($accessToken, JSON_UNESCAPED_UNICODE));
+        // $blocks = $this->feishuService->getDocumentBlocks($documentId);
+        // file_put_contents('feishu_doc_blocks_'.$documentId.'.json', json_encode($blocks, JSON_UNESCAPED_UNICODE));
 
+        // file_put_contents('feishu_doc_'.$documentId.'.md', $content);
+        return $content;
 
-        // new FeishuBrowserDoc($documentId);
+    }
+
+    protected function syncFolders($folderToken = '', $pageToken = '')
+    {
+        $params = [
+            'order_by' => 'CreatedTime',
+            'direction' => 'ASC'
+        ];
+
+        $response = $this->feishuService->getDriveFiles([...$params, $folderToken, $pageToken]);
+        
+        foreach ($response['files'] as $value) {
+            if ($value['type'] === 'folder') {
+                $tmpResponse = null;
+                do {
+                    $tmpResponse = $this->syncFolders($value['token'], data_get($tmpResponse, 'next_page_token', ''));
+
+                    if (!$response['has_more']) {
+                        break;
+                    }
+                } while(true);
+            } else if ($value['type'] === 'docx') {
+                $this->syncDoc($value['token']);
+            }
+        }
+
+        return $response;
+    }
+
+    protected function syncDoc()
+    {
+        // $docId, $docType = 'docx', $docUrl = ''
+        $docId = $this->option('doc-id');
+        $dockType = $this->option('wiki') ? 'wiki' : 'docx';
+
+        // $docUrl = 
+        // dump($docId, $docType);
+        $content = $this->feishuService->renderToMarkdown($docId, $dockType);
+
+        MarkdownRendered::dispatch($content, '', [], $docId);
+        // dump($comments);
     }
 }

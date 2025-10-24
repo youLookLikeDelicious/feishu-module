@@ -14,6 +14,6 @@ use Modules\Feishu\Http\Controllers\FeishuController;
  *
 */
 
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('feishu', FeishuController::class)->names('feishu');
+Route::middleware([])->prefix('v1')->group(function () {
+    Route::post('/doc/sync', [FeishuController::class, 'syncDoc'])->name('feishu.doc.sync');
 });

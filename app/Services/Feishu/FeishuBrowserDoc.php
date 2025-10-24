@@ -24,7 +24,7 @@ class FeishuBrowserDoc
     public function loadPage($documentId)
     {
         $websocketUri = 'ws://browserless:3000/?token=6R0W53R135510';
-        $connection = new Connection($websocketUri, sendSyncDefaultTimeout: 3000);
+        $connection = new Connection($websocketUri, sendSyncDefaultTimeout: 120000);
         $connection->connect();
         $this->browser = new Browser($connection);
         try {
@@ -60,8 +60,10 @@ class FeishuBrowserDoc
 
         $content = $this->page->evaluate('document.querySelector("[data-record-id=\"'.$blockId.'\"]  canvas")?.toDataURL("base64/png")')->getReturnValue();
         if($content) {
-            Storage::put($blockId.'.png', base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
-            return storage_path($blockId.'.png');
+            $path = 'images/'.$blockId.'.png';
+            Storage::put($path, base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
+
+            return $path;
         }
 
         return null;

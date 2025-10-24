@@ -30,7 +30,7 @@ class FeishuService extends Service
                 throw new \Exception('请求飞书接口失败，HTTP状态码：'.$resData['code'].'，错误信息：'.$resData['msg']);
             }
             return $response;
-        })->withHeader('Content-Type', 'application/json');
+        });
     }
 
     /**
@@ -108,6 +108,51 @@ class FeishuService extends Service
             }
         });
         
-        file_put_contents('markdown_'.$documentId.'.md', $contents);
+        // file_put_contents('markdown_'.$documentId.'.md', $contents);
+        return $contents;
+    }
+
+    /**
+     * 获取根目录的元数据
+     *
+     * @see https://open.feishu.cn/document/server-docs/docs/drive-v1/folder/get-root-folder-meta
+     * @return mixed
+     */
+    public function getRootFolderMeta()
+    {
+        $response = $this->http()->withToken($this->getAppAccessToken()['tenant_access_token'])
+            ->get('https://open.feishu.cn/open-apis/drive/explorer/v2/root_folder/meta');
+
+        return $response->json('data');
+    }
+
+    /**
+     * 获取文件列表
+     *
+     * @param array $params
+     * @return void
+     * @see https://open.feishu.cn/document/server-docs/docs/drive-v1/folder/list?appId=cli_a84822df3f191013
+     */
+    public function getDriveFiles($params = [])
+    {
+        // $response = $this->http()->withToken($this->getAppAccessToken()['tenant_access_token'])
+        $response = $this->http()->withToken('u-fXnJKl5EN8kVP_8vz8..fNl0n7ggklwVhW00l4A02yxc')
+            ->get('https://open.feishu.cn/open-apis/drive/v1/files', $params);
+
+        return $response->json('data');
+    }
+
+    /**
+     * 获取文档评论列表
+     *
+     * @return void
+     * 
+     */
+    public function getDocComments($docToken, $params)
+    {
+        $response = $this->http()->withToken($this->getAppAccessToken()['tenant_access_token'])
+            ->get("https://open.feishu.cn/open-apis/drive/v1/files/$docToken/comments", $params);
+
+        return $response->json('data');
     }
 }

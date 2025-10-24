@@ -3,6 +3,9 @@
 namespace Modules\Feishu\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Event;
+use Modules\Feishu\Events\MarkdownRendered;
+use Modules\Feishu\Listeners\CommitToGithub;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -26,5 +29,10 @@ class EventServiceProvider extends ServiceProvider
     protected function configureEmailVerification(): void
     {
         //
+    }
+
+    public function boot(): void
+    {
+        Event::listen(MarkdownRendered::class, CommitToGithub::class);
     }
 }

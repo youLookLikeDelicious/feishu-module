@@ -257,7 +257,7 @@ trait RenderBlock
         if (isset($element['equation'])) {
             return [
                 'style' => data_get($element, 'equation.text_element_style', []),
-                'content' => '$$'.data_get($element, 'equation.content', '').'$$',
+                'content' => '$'.data_get($element, 'equation.content', '').'$',
             ];
         } else if (isset($element['text_run'])) {
             return [
@@ -343,10 +343,11 @@ trait RenderBlock
     {
         $meidaToken = data_get($block, 'image.token');
 
+        $path = "images/$meidaToken";
         // $url = $this->feishuService->getMediasTempDownloadUrl($meidaToken);
-        // Storage::put($meidaToken.'.jpg', file_get_contents($url));
+        // Storage::put($path, file_get_contents($url));
 
-        return "![image]($meidaToken)".PHP_EOL;
+        return "![image]($path)".PHP_EOL;
     }
 
     /**
