@@ -2,6 +2,7 @@
 namespace Modules\Feishu\Services\Feishu\Traits;
 
 use BadMethodCallException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Modules\Feishu\Services\Feishu\TableBlock;
 
@@ -344,8 +345,13 @@ trait RenderBlock
         $meidaToken = data_get($block, 'image.token');
 
         $path = "images/$meidaToken";
-        // $url = $this->feishuService->getMediasTempDownloadUrl($meidaToken);
-        // Storage::put($path, file_get_contents($url));
+        $url = $this->feishuService->getMediasTempDownloadUrl($meidaToken);
+
+        if (empty($url)) {
+            return '[image](#)'.PHP_EOL;
+        }
+
+        Storage::put($path, file_get_contents(Arr::first($url)));
 
         return "![image]($path)".PHP_EOL;
     }

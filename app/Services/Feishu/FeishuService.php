@@ -27,7 +27,7 @@ class FeishuService extends Service
         return Http::withResponseMiddleware(function (ResponseInterface $response) {
             $resData = json_decode($response->getBody()->getContents(), true);
             if ($resData['code'] !== 0) {
-                throw new \Exception('请求飞书接口失败，HTTP状态码：'.$resData['code'].'，错误信息：'.$resData['msg']);
+                throw new \Exception('请求飞书接口失败，HTTP状态码：'.$resData['code'].'，错误信息：'.var_export($resData, true));
             }
             return $response;
         });
@@ -74,15 +74,22 @@ class FeishuService extends Service
      */
     public function getMediasTempDownloadUrl($mediaTokens, $extra = '')
     {
-        // $authToken = $this->getAppAccessToken()['app_access_token'];
-        // $response = $this->http()->withToken($authToken)->get("https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url", [
-        //     'file_tokens' => $mediaTokens,
-        //     // 'extra' => $extra,
-        // ]);
+        $authToken = $this->getAppAccessToken()['app_access_token'];
+        $url = "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url";
+        $query = http_build_query([
+            'file_tokens' => $mediaTokens,
+            // 'extra' => $extra,
+        ]);
+        
+        $response = $this->http()->withToken($authToken)
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+            ])
+            ->get("$url?$query");
         
         // dd($response);
 
-        return "https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/v2/cover/$mediaTokens";
+        return $response->json('data.tmp_download_urls.*.tmp_download_url');
     }
 
     public function renderToMarkdown($documentId, $docType = 'docx')

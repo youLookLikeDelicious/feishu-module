@@ -4,7 +4,6 @@ namespace Modules\Feishu\Console;
 
 use Illuminate\Console\Command;
 use Modules\Feishu\Events\MarkdownRendered;
-use Modules\Feishu\Services\Feishu\FeishuBrowserDoc;
 use Modules\Feishu\Services\Feishu\FeishuService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
