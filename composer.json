@@ -30,11 +30,5 @@
     },
     "require": {
         "chrome-php/chrome": "1.14"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:youlooklikedelicious/feishu-module.git"
-        }
-    ]
+    }
 }
