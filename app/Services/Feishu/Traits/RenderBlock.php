@@ -154,16 +154,16 @@ trait RenderBlock
     ];
 
     
-    protected $extentions = [];
+    protected $extensions = [];
 
     protected function renderBlock($block)
     {
         $result = '';
 
         $method = $this->blocks[$block['block_type']] ?? null;
-        if (array_key_exists($block['block_type'], $this->extentions)) {
+        if (array_key_exists($block['block_type'], $this->extensions)) {
             $result = $this->callExtension($block['block_type'], $block);
-        } else if ($method && method_exists($this, $method)) {
+        } else if ($method) {
             $result = $this->$method($block);
         }
 
@@ -188,7 +188,7 @@ trait RenderBlock
 
     protected function callExtension($type, $block)
     {
-        $handler = $this->extentions[$block['block_type']];
+        $handler = $this->extensions[$block['block_type']];
 
         if (is_callable($handler)) {
             return $handler($block);
@@ -228,10 +228,12 @@ trait RenderBlock
      */
     protected function renderHeaderBlock($block, int $level)
     {
-        $content = data_get($block, "heading{$level}.elements.text_run.content", '');
-
+        $content = '';
+        foreach (data_get($block, "heading{$level}.elements", []) as $element) {
+            $content .= $this->parseTextBlockElement($element)['content'];
+        }
         if ($content) {
-            $content = str_repeat('#', $level).trim($content).PHP_EOL;
+            $content = str_repeat('#', $level).' '.trim($content).PHP_EOL;
         }
 
         return $content;
@@ -256,9 +258,11 @@ trait RenderBlock
     protected function parseTextBlockElement($element)
     {
         if (isset($element['equation'])) {
+            $content = data_get($element, 'equation.content', '');
+            $content = rtrim($content);
             return [
                 'style' => data_get($element, 'equation.text_element_style', []),
-                'content' => '$'.data_get($element, 'equation.content', '').'$',
+                'content' => '$'.$content.'$',
             ];
         } else if (isset($element['text_run'])) {
             return [

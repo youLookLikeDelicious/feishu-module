@@ -99,7 +99,7 @@ class FeishuService extends Service
             $query = [];
             while (1) {
                 $responseData = $this->getDocumentBlocks($documentId, $query);
-                
+
                 foreach ($responseData['data']['items'] as $block) {
                     yield $block;
                 }

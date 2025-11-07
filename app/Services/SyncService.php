@@ -13,11 +13,13 @@ class SyncService extends Service
             'type' => 'required|string',
             'doc_id' => 'required',
         ]);
-        // header('Access-Control-Allow-Origin: http://localhost:8081');
-        Artisan::call('feishu:cli', [
+
+        Artisan::queue('feishu:cli', [
             'cmd' => 'sync-doc',
             '--doc-id' => $validated['doc_id'],
             '--wiki' => $validated['type'] === 'wiki'
         ]);
+
+        return response()->noContent();
     }
 }

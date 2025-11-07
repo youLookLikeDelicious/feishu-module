@@ -126,15 +126,11 @@ class FeishuCli extends Command
 
     protected function syncDoc()
     {
-        // $docId, $docType = 'docx', $docUrl = ''
         $docId = $this->option('doc-id');
         $dockType = $this->option('wiki') ? 'wiki' : 'docx';
 
-        // $docUrl = 
-        // dump($docId, $docType);
         $content = $this->feishuService->renderToMarkdown($docId, $dockType);
 
         MarkdownRendered::dispatch($content, '', [], $docId);
-        // dump($comments);
     }
 }
