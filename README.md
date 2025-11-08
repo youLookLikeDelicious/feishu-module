@@ -34,4 +34,5 @@ composer require youlooklikedelicious/feishu-module
 
 1. PHP 8.2 或更高级版本
 2. Laravel 11 或更高级版本
-3. [飞书客户端小组件](https://github.com/youLookLikeDelicious/feishu-sync-github-cli)
+3. [Laravelmodules](https://laravelmodules.com/)
+4. [飞书客户端小组件](https://github.com/youLookLikeDelicious/feishu-sync-github-cli)
