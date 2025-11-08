@@ -30,6 +30,14 @@ composer require youlooklikedelicious/feishu-module
 }
 ```
 
+.env添加
+```
+GITHUB_APP_INSTALL_ID=
+GITHUB_APP_ID=
+GITHUB_APP_SECRET=""
+GITHUB_REPOSITORY=youLookLikeDelicious/chaos-blog
+```
+
 ## Requirement
 
 1. PHP 8.2 或更高级版本
