@@ -68,7 +68,10 @@ class FeishuBrowserDoc
         try {
             $result =  $this->renderBoardOriginImage($boardToken);
             if ($result) {
-                return $result;
+                $content = $result;
+                $path = 'images/'.$blockId.'.png';
+                Storage::put($path, base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $content)));
+                return $path;
             }
         } catch(\Exception $e) {
             // 渲染失败则继续使用画布截图方式
