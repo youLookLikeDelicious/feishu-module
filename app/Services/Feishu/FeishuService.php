@@ -142,8 +142,7 @@ class FeishuService extends Service
      */
     public function getDriveFiles($params = [])
     {
-        // $response = $this->http()->withToken($this->getAppAccessToken()['tenant_access_token'])
-        $response = $this->http()->withToken('u-fXnJKl5EN8kVP_8vz8..fNl0n7ggklwVhW00l4A02yxc')
+        $response = $this->http()->withToken($this->getAppAccessToken()['tenant_access_token'])
             ->get('https://open.feishu.cn/open-apis/drive/v1/files', $params);
 
         return $response->json('data');
@@ -152,7 +151,9 @@ class FeishuService extends Service
     /**
      * 获取文档评论列表
      *
-     * @return void
+     * @param string $docToken 文档的token
+     * @param array $params 查询参数
+     * @return mixed
      * 
      */
     public function getDocComments($docToken, $params)

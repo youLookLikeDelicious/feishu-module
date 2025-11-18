@@ -118,12 +118,12 @@ trait RenderBlock
         18 => 'renderMultiDimensionalTable', // 多维表格 Block
         // 19 => '高亮块 Block',
         // 20 => '会话卡片 Block',
-        // 21 => '流程图 & UML Block',
+        // 21 => 'renderWorkflowAndUrl', // 流程图 & UML Block
         22 => 'renderDivider', // 分割线 Block
         // 23 => '文件 Block',
         // 24 => '分栏 Block',
         // 25 => '分栏列 Block',
-        // 26 => '内嵌 Block Block',
+        26 => 'renderIframe', // 内嵌 Block
         27 => 'renderImageBlock', // 图片 Block
         // 28 => '开放平台小组件 Block',
         // 29 => '思维笔记 Block',
@@ -137,7 +137,7 @@ trait RenderBlock
         // 37 => 'OKR Objective Block',
         // 38 => 'OKR Key Result Block',
         // 39 => 'OKR Progress Block',
-        // 40 => '新版文档小组件 Block',
+        40 => 'renderNewWidget', // 渲染新文档小组件
         // 41 => 'Jira 问题 Block',
         // 42 => 'Wiki 子页面列表 Block(旧版)',
         43 => 'renderPainterBlock',  // 画板 Block
@@ -262,7 +262,7 @@ trait RenderBlock
             $content = rtrim($content);
             return [
                 'style' => data_get($element, 'equation.text_element_style', []),
-                'content' => '$'.$content.'$',
+                'content' => '$$'.$content.'$$',
             ];
         } else if (isset($element['text_run'])) {
             return [
@@ -347,17 +347,26 @@ trait RenderBlock
     protected function renderImageBlock($block)
     {
         $meidaToken = data_get($block, 'image.token');
+        $description = data_get($block, 'image.caption.content', '');
+
+        $width = data_get($block, 'image.width', '');
+        $height = data_get($block, 'image.height', '');
+        $size = $width && $height ? "size={$width},{$height}" : '';
+        $size = trim($size);
 
         $path = "images/$meidaToken";
         $url = $this->feishuService->getMediasTempDownloadUrl($meidaToken);
 
         if (empty($url)) {
-            return '[image](#)'.PHP_EOL;
+            return '['.$description.'](#)'.PHP_EOL;
         }
 
         Storage::put($path, file_get_contents(Arr::first($url)));
 
-        return "![image]($path)".PHP_EOL;
+        if ($size) {
+            $path .= '?'.$size;
+        }
+        return "![$description]($path)".PHP_EOL;
     }
 
     /**
@@ -418,8 +427,8 @@ trait RenderBlock
     protected function renderPainterBlock($block)
     {
         $blockId = data_get($block, 'block_id', '');
-
-        $file = $this->browser()->downloadCanvas($blockId);
+        $boardToken = data_get($block, 'board.token');
+        $file = $this->browser()->downloadCanvas($blockId, $boardToken);
 
         return $file ? "![painter]($file)".PHP_EOL : ''; 
     }
@@ -510,6 +519,49 @@ trait RenderBlock
         $prefix = data_get($style, 'done', false) ? '[x] ' : '[ ] ';
 
         return $prefix.$content.PHP_EOL;
+    }
+
+    /**
+     * 渲染新文档小组件
+     *
+     * @param mixed $block
+     * @return string
+     */
+    protected function renderNewWidget($block)
+    {
+        $record = data_get($block, 'add_ons.record');
+
+        try {
+            $record = json_decode($record, true);
+
+            if (isset($record['component']) && $record['component'] === 'chaos_doc') {
+                $src = $record['url'] ?? '';
+                $height = $record['height'] ?? '450';
+                $title = $record['title'] ?? 'Embedded Document';
+
+                return '<iframe height="'.$height.'" title="'.$title.'" style="width: 100%;" scrolling="no" src="'.$src.'" frameborder="no" loading="lazy" allowtransparency="true"></iframe>'.PHP_EOL;
+            }
+        } catch (\Exception $e) {
+            return '';
+        }
+
+        return '';
+    }
+
+    /**
+     * 渲染内嵌 iframe
+     *
+     * @param mixed $block
+     * @return string
+     */
+    protected function renderIframe($block)
+    {
+        $url = data_get($block, 'iframe.component.url', '');
+        if (! $url) {
+            return;
+        }
+        $url = urldecode($url);
+        return '<iframe src="'.$url.'" style="width: 100%; height: 450px;" frameborder="0" allowfullscreen></iframe>'.PHP_EOL.PHP_EOL;
     }
 
     public function __call($method, $args)
