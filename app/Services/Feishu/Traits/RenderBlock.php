@@ -351,8 +351,15 @@ trait RenderBlock
 
         $width = data_get($block, 'image.width', '');
         $height = data_get($block, 'image.height', '');
-        $size = $width && $height ? "size={$width},{$height}" : '';
-        $size = trim($size);
+        $scale = data_get($block, 'image.scale', 1);
+        $size = '';
+
+        if ($width && $height) {
+            $width = (int)($width * $scale);
+            $height = (int)($height * $scale);
+            $size = "size={$width},{$height}";
+            $size = trim($size);
+        }
 
         $path = "images/$meidaToken";
         $url = $this->feishuService->getMediasTempDownloadUrl($meidaToken);
